@@ -1,0 +1,7 @@
+#!/bin/sh
+# Trava: roda a varredura de segredos antes de cada commit. Ative uma vez com:
+#   git config core.hooksPath .githooks
+node "$(git rev-parse --show-toplevel)/ferramentas/varrer_segredos.mjs" || {
+  echo "Commit bloqueado pela varredura de segredos."
+  exit 1
+}

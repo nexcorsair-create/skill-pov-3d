@@ -1,0 +1,7 @@
+{
+  "duracao_s": 15.0,
+  "falas": [
+    { "cod": "F01", "quem": "VOZ_NA_PORTA", "inicio": 6.2, "arquivo": "voz/falas/F01_VOZ_NA_PORTA_take1.wav", "tom": "calmo demais", "ganho_db": -2 },
+    { "cod": "F02", "quem": "VOCE", "inicio": 8.9, "arquivo": "voz/falas/F02_VOCE_take1.wav", "tom": "sussurrando" }
+  ]
+}

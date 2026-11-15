@@ -1,0 +1,13 @@
+{
+  "modelo": "eleven_v4_turbo",
+  "regra_custo": "só vozes de taxa 1 (sem multiplicador); conferir com scripts/conferir_vozes.mjs antes de gravar",
+  "regra_tags": "falas finais sempre com tags de emoção; sem tags só nas amostras",
+  "pt": {
+    "VOCE": { "nome": "Você", "cor": "#ffc23d", "voz": "", "voice_id": "", "candidatos": [] },
+    "VOZ_NA_PORTA": { "nome": "Voz na porta", "cor": "#c9a8ff", "voz": "", "voice_id": "", "candidatos": [] }
+  },
+  "es": {
+    "VOCE": { "nome": "Tú", "cor": "#ffc23d", "voz": "", "voice_id": "", "candidatos": [] },
+    "VOZ_NA_PORTA": { "nome": "Voz en la puerta", "cor": "#c9a8ff", "voz": "", "voice_id": "", "candidatos": [] }
+  }
+}

@@ -1,0 +1,34 @@
+# Chaves e segredos: NUNCA sobem (só o modelo .env.example)
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+
+# Programas instalados e arquivos temporários
+node_modules/
+.venv/
+__pycache__/
+*.pyc
+out/
+**/remotion-tmp/
+.DS_Store
+Thumbs.db
+
+# Vídeos, renders e áudios (pesados, e podem ser trabalho particular de quem usa)
+*.mp4
+*.mov
+*.webm
+*.mkv
+*.mp3
+*.wav
+*.aiff
+*.flac
+*.m4a
+*.ogg
+
+# Histórias de quem usa (ficam no computador da pessoa)
+historias/
+
+# Fonte do guia (fontes e ícone da marca ficam só no computador do criador)
+_fonte-guia/
