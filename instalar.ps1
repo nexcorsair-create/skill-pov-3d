@@ -1,20 +1,25 @@
-﻿# Instalador do historias-pov para Windows.
+# Instalador do historias-pov para Windows.
 # Uso (PowerShell):  irm https://raw.githubusercontent.com/nexcorsair-create/skill-pov-3d/main/instalar.ps1 | iex
-#   ou, na pasta baixada:  powershell -ExecutionPolicy Bypass -File instalar.ps1
-# Opções (só quando roda o arquivo): -Pasta <pasta de trabalho> -ComEarshot -Sim (não pergunta) -SemTeste
-#   (pelo comando de uma linha, use variáveis antes:  $env:HPOV_PASTA="D:\Videos"; $env:HPOV_EARSHOT="1")
+#   ou: baixe o pacote e dê dois cliques em instalar.cmd
+# Opções (variáveis antes do comando, valem nos dois jeitos):
+#   $env:HPOV_PASTA="D:\Videos\HistoriasPOV"   pasta de trabalho (padrão: HistoriasPOV na sua pasta de usuário)
+#   $env:HPOV_EARSHOT="1"                        instala também o Earshot (~2 GB)
+#   $env:HPOV_SIM="1"                            não pergunta (para testes)
 # O que faz: instala o que falta (Node.js, ffmpeg, Python, faster-whisper), copia a skill para o Claude,
 # cria a pasta de trabalho com o estúdio e faz um teste. Não pede nem guarda nenhuma chave.
+# (Este arquivo é salvo SEM a marca BOM de propósito: com ela, o "irm | iex" quebra.)
 param(
   [string]$Pasta = $(if ($env:HPOV_PASTA) { $env:HPOV_PASTA } else { Join-Path $HOME "HistoriasPOV" }),
   [string]$PastaSkills = $(if ($env:HPOV_SKILLS) { $env:HPOV_SKILLS } else { Join-Path $HOME ".claude\skills" }),
   [string]$Repo = $(if ($env:HPOV_REPO) { $env:HPOV_REPO } else { "nexcorsair-create/skill-pov-3d" }),
-  [string]$Origem = "",
+  [string]$Origem = $(if ($env:HPOV_ORIGEM) { $env:HPOV_ORIGEM } else { "" }),
   [switch]$ComEarshot = [bool]$env:HPOV_EARSHOT,
   [switch]$Sim = [bool]$env:HPOV_SIM,
   [switch]$SemTeste = [bool]$env:HPOV_SEMTESTE
 )
-$ErrorActionPreference = "Stop"
+# "Continue": avisos de programas externos (npm, pip) não podem derrubar a instalação; os erros de verdade
+# são conferidos pelo código de saída ($LASTEXITCODE) e pelos comandos com -ErrorAction Stop.
+$ErrorActionPreference = "Continue"
 $ProgressPreference = "SilentlyContinue"
 function Passo($t) { Write-Host ""; Write-Host "==> $t" -ForegroundColor Cyan }
 function Ok($t) { Write-Host "    ok: $t" -ForegroundColor Green }
@@ -80,9 +85,9 @@ if (-not $Origem) {
   else {
     if ($Repo -like "SEU-USUARIO*") { Falha "este instalador ainda não sabe de onde baixar (endereço do repositório não definido). Baixe a pasta do pacote e rode o instalar.ps1 de dentro dela." }
     $zip = Join-Path $env:TEMP "historias-pov.zip"; $dest = Join-Path $env:TEMP "historias-pov-src"
-    Invoke-WebRequest "https://github.com/$Repo/archive/refs/heads/main.zip" -OutFile $zip
-    if (Test-Path $dest) { Remove-Item $dest -Recurse -Force }
-    Expand-Archive $zip $dest; $Origem = (Get-ChildItem $dest -Directory | Select-Object -First 1).FullName
+    Invoke-WebRequest "https://github.com/$Repo/archive/refs/heads/main.zip" -OutFile $zip -ErrorAction Stop
+    if (Test-Path $dest) { Remove-Item $dest -Recurse -Force -ErrorAction Stop}
+    Expand-Archive $zip $dest -ErrorAction Stop; $Origem = (Get-ChildItem $dest -Directory | Select-Object -First 1).FullName
   }
 }
 $skillSrc = Join-Path $Origem "skill\historia-pov"
@@ -91,27 +96,27 @@ Ok "arquivos em $Origem"
 
 # ---------- 5. a skill ----------
 Passo "Copiando a skill para o Claude"
-New-Item -ItemType Directory -Force $PastaSkills | Out-Null
+New-Item -ItemType Directory -Force $PastaSkills -ErrorAction Stop | Out-Null
 $skillDest = Join-Path $PastaSkills "historia-pov"
 if (Test-Path $skillDest) {
-  $bk = "$skillDest.antiga-" + (Get-Date -Format "yyyyMMdd-HHmmss"); Move-Item $skillDest $bk; Aviso "a skill antiga foi guardada em $bk"
+  $bk = "$skillDest.antiga-" + (Get-Date -Format "yyyyMMdd-HHmmss"); Move-Item $skillDest $bk -ErrorAction Stop; Aviso "a skill antiga foi guardada em $bk"
 }
-Copy-Item $skillSrc $skillDest -Recurse
+Copy-Item $skillSrc $skillDest -Recurse -ErrorAction Stop
 Ok $skillDest
 
 # ---------- 6. pasta de trabalho ----------
 Passo "Criando a pasta de trabalho"
 $estudio = Join-Path $Pasta "estudio"
-New-Item -ItemType Directory -Force (Join-Path $Pasta "historias") | Out-Null
+New-Item -ItemType Directory -Force (Join-Path $Pasta "historias") -ErrorAction Stop | Out-Null
 $codigo = Join-Path $skillSrc "codigo\estudio"
-if (-not (Test-Path $estudio)) { Copy-Item $codigo $estudio -Recurse; Ok "estúdio novo em $estudio" }
+if (-not (Test-Path $estudio)) { Copy-Item $codigo $estudio -Recurse -ErrorAction Stop; Ok "estúdio novo em $estudio" }
 else {
   # atualização: troca só as peças do pacote; não mexe em .env.local, nas histórias nem no Root.tsx
-  foreach ($p in @("src\kit", "src\exemplo", "scripts")) { Copy-Item (Join-Path $codigo "$p\*") (Join-Path $estudio $p) -Recurse -Force }
-  foreach ($p in @("package.json", "tsconfig.json", ".env.example")) { Copy-Item (Join-Path $codigo $p) (Join-Path $estudio $p) -Force }
+  foreach ($p in @("src\kit", "src\exemplo", "scripts")) { Copy-Item (Join-Path $codigo "$p\*") (Join-Path $estudio $p) -Recurse -Force -ErrorAction Stop}
+  foreach ($p in @("package.json", "tsconfig.json", ".env.example")) { Copy-Item (Join-Path $codigo $p) (Join-Path $estudio $p) -Force -ErrorAction Stop}
   Aviso "o estúdio já existia: atualizei só as peças do pacote (kit, exemplo, scripts). Suas histórias e sua chave não foram tocadas."
 }
-if (-not (Test-Path (Join-Path $Pasta "CLAUDE.md"))) { Copy-Item (Join-Path $skillSrc "codigo\CLAUDE.md") (Join-Path $Pasta "CLAUDE.md") }
+if (-not (Test-Path (Join-Path $Pasta "CLAUDE.md"))) { Copy-Item (Join-Path $skillSrc "codigo\CLAUDE.md") (Join-Path $Pasta "CLAUDE.md") -ErrorAction Stop}
 
 Passo "Instalando o estúdio (Remotion + three.js)"
 Push-Location $estudio

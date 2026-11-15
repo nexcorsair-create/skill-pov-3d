@@ -29,7 +29,7 @@ O instalador mostra a lista do que vai fazer e só faz **uma pergunta: se você 
 
 Leva de 5 a 20 minutos. Também dá para baixar este repositório (botão **Code → Download ZIP**), descompactar e dar dois cliques em `instalar.cmd` (Windows) ou rodar `bash instalar.sh` (Mac).
 
-Opções: pasta de trabalho em outro lugar (`-Pasta D:\Videos` no Windows, `--pasta ~/Videos` no Mac); instalar também o Earshot, o "ouvido" do Claude para conferir o som, com ~2 GB (`-ComEarshot` / `--com-earshot`).
+Opções: pasta de trabalho em outro lugar e instalar também o Earshot, o "ouvido" do Claude para conferir o som (~2 GB). No Windows, digite antes do comando `$env:HPOV_PASTA="D:\Videos\HistoriasPOV"` e/ou `$env:HPOV_EARSHOT="1"`; no Mac, `export HPOV_PASTA=~/Videos/HistoriasPOV` e/ou `export HPOV_EARSHOT=1`.
 
 ## Usar
 
